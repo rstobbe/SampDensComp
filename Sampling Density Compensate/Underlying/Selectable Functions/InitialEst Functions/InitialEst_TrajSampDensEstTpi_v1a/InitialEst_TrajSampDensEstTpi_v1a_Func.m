@@ -2,7 +2,7 @@
 % 
 %====================================================
 
-function [IE,err] = InitialEst_TrajSampDensEst_v1h_Func(IE,INPUT)
+function [IE,err] = InitialEst_TrajSampDensEstTpi_v1a_Func(IE,INPUT)
 
 Status2('busy','Determine Initial Estimate',2);
 Status2('done','',3);
@@ -14,6 +14,7 @@ err.msg = '';
 % Get Input
 %---------------------------------------------
 IMP = INPUT.IMP;
+projconeosamp = IMP.PSMP.PCD.projconeosamp;
 samp = IMP.samp;
 Kmat = IMP.Kmat;
 if isfield(IMP,'impPROJdgn')
@@ -47,10 +48,9 @@ npro = sz(2);
 %--------------------------------------------
 % Get SD Shape
 %--------------------------------------------
-%backup = 30;
-backup = 50;
+backup = 10;
 npro = npro-backup;
-r = sqrt(Kmat(:,:,1).^2 + Kmat(:,:,2).^2 + Kmat(:,:,3).^2)/kmax;
+r = sqrt(Kmat(end,:,1).^2 + Kmat(end,:,2).^2 + Kmat(end,:,3).^2)/kmax;
 rprof0 = mean(r,1);
 rprof = rprof0(1:end-backup);
 rprof = smooth(rprof,IE.smoothing/npro,'lowess').';
@@ -64,7 +64,7 @@ for m = 2:npro
 end
 
 SDest = zeros(1,npro);
-SDest(2:npro) = p^2./(dr(2:npro).*rprof(2:npro).^2);
+SDest(2:npro) = p^2./(dr(2:npro).*rprof(1:npro-1).^2);
 SDest(1) = SDest(2);
 
 %--------------------------------------------
@@ -85,17 +85,13 @@ iSDC = TFOKmat./SDestKmat;
 
 iSDC(iSDC < 0) = -iSDC(iSDC < 0);
 
+iSDC = iSDC*IE.scale;
+
 %--------------------------------------------
 % Plot 
 %--------------------------------------------
 visuals = 1;
 if visuals == 1
-%     figure(40); hold on; 
-%     plot(rprof0,SDestKmat,'k'); xlim([0 1]); 
-%     ylim([0 20]); 
-%     xlabel('Relative k-Space Radius'); 
-%     ylabel('Sampling Density'); 
-%     title('Relative Sampling Density Estimate'); 
     figure(400); 
     subplot(2,2,3);
     plot(iSDC,'k'); 
@@ -111,8 +107,14 @@ if (find(iSDC < 0))
     error;                  % fix up above
 end
 
-
 iSDC = meshgrid(iSDC,1:nproj);
+
+for n = 1:nproj
+    iSDC(n,:) = iSDC(n,:)/projconeosamp(n);
+end
+
+% figure(2346234);
+% plot(iSDC(:,1000));
 
 IE.iSDC = iSDC;
 IE.iterations = 0;

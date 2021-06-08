@@ -2,7 +2,7 @@
 % 
 %====================================================
 
-function [IE,err] = InitialEst_TrajSampDensEstScale_v1h_Func(IE,INPUT)
+function [IE,err] = InitialEst_TrajSampDensEst_v1h_Func(IE,INPUT)
 
 Status2('busy','Determine Initial Estimate',2);
 Status2('done','',3);
@@ -84,8 +84,6 @@ TFOKmat = interp1(TFO.r,TFO.forsdcest,rprof0,'linear','extrap');
 iSDC = TFOKmat./SDestKmat;   
 
 iSDC(iSDC < 0) = -iSDC(iSDC < 0);
-
-iSDC = iSDC*IE.scale;
 
 %--------------------------------------------
 % Plot 

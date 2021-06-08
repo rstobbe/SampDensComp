@@ -59,7 +59,7 @@ for n = 1:length(pSubSamp)
         if RadDim < 250
             break
         end
-    elseif pSubSamp(n)==10 || pSubSamp(n)==8 || pSubSamp(n)==6.4 || pSubSamp(n)==5
+    elseif pSubSamp(n)==10 || pSubSamp(n)==8 || pSubSamp(n)==6.4 || pSubSamp(n)==6.25 || pSubSamp(n)==5
         if RadDim < 200
             break
         end
