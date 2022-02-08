@@ -21,7 +21,11 @@ if isfield(IMP,'impPROJdgn')
 else
     PROJdgn = IMP.PROJdgn;
 end
-ORNT = IMP.ORNT;
+if isfield(IMP,'ORNT')
+    ORNT = IMP.ORNT;
+else
+    ORNT.ElipDim = 3;
+end
 clear INPUT
 
 %----------------------------------------

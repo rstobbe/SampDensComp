@@ -70,11 +70,10 @@ SDest(1) = SDest(2);
 %--------------------------------------------
 % Add Global Sampling Density
 %--------------------------------------------
-SDest = SDest * PROJimp.trajosamp * 3;
-
 if isfield(PROJdgn,'edgeSD')
     SDest = SDest*(PROJdgn.edgeSD/SDest(end));
 end
+SDest = SDest * PROJimp.trajosamp;
 
 %--------------------------------------------
 % Interp at Sampling Points
@@ -94,10 +93,11 @@ visuals = 1;
 if visuals == 1
     figure(400); 
     subplot(2,2,3);
-    plot(iSDC,'k'); 
-    xlim([0 length(rprof0)]); 
-    xlabel('Sampling Point'); 
-    title('Initial SDC Estimate');
+    plot(rprof0,SDestKmat,'k'); 
+    ylim([0 1.5*(1/p)^2]); 
+    xlim([0 1]);
+    xlabel('Relative Radius'); 
+    title('Initial Sampling Estimate');
 end
 
 %--------------------------------------------
