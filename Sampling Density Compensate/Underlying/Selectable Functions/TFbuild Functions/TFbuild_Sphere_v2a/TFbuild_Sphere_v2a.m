@@ -28,14 +28,14 @@ end
 %==================================================================
 % Constructor
 %==================================================================  
-function err = BuildTransFunc(TFB,SDCMETH,IMP)   
+function err = BuildTransFunc(TFB,SDCMETH)   
     err.flag = 0;
     Status2('done','Build TF',2);
     Status2('done','',3);
 
     TFO = SDCMETH.TFO;
     KRN = SDCMETH.OPT.KRN;
-    KINFO = IMP.KINFO;
+    KINFO = SDCMETH.KINFO;
 
     %----------------------------------------
     % Error Tests
@@ -71,12 +71,22 @@ function err = BuildTransFunc(TFB,SDCMETH,IMP)
             if RadDim0 < 250
                 break
             end
-        elseif pSubSamp(n)==10 || pSubSamp(n)==8 || pSubSamp(n)==6.4 || pSubSamp(n)==6.25 || pSubSamp(n)==5
+        elseif pSubSamp(n)==6.4 || pSubSamp(n)==6.25 || pSubSamp(n)==5
             if RadDim0 < 200
                 break
             end
+        elseif pSubSamp(n)==8 
+            if RadDim0 < 120
+                break
+            end
+        elseif pSubSamp(n)==10
+            if RadDim0 < 80
+            %if RadDim0 < 150       % too long
+                break
+            end
         elseif pSubSamp(n)==12.5
-            if RadDim0 < 150
+            if RadDim0 < 80
+            %if RadDim0 < 150       % too long
                 break
             end
         elseif pSubSamp(n)==2

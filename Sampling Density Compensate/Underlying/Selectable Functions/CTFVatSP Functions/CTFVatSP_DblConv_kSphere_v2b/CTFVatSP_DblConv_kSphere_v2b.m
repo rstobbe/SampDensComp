@@ -1,12 +1,12 @@
 %==================================================================
-% (v2a)
-%   - Convert to Object
+% (v2b)
+%   - Include option for 'UseIndex'
 %==================================================================
 
-classdef CTFVatSP_DblConv_kSphere_v2a < handle
+classdef CTFVatSP_DblConv_kSphere_v2b < handle
 
 properties (SetAccess = private)                   
-    Method = 'CTFVatSP_DblConv_kSphere_v2a'
+    Method = 'CTFVatSP_DblConv_kSphere_v2b'
     TFB
     DesiredOutputValues
     Panel = cell(0)
@@ -17,7 +17,7 @@ methods
 %==================================================================
 % Constructor
 %==================================================================  
-function [CTFV,err] = CTFVatSP_DblConv_kSphere_v2a(CTFVipt)     
+function [CTFV,err] = CTFVatSP_DblConv_kSphere_v2b(CTFVipt)     
     err.flag = 0;
     func = str2func('TFbuild_Sphere_v2a');           
     CTFV.TFB = func('');    
@@ -118,7 +118,11 @@ function err = DetermineCtfvAtSp(CTFV,SDCMETH,CUDA)
     %----------------------------------------
     % Normalize Sampling Locations to Grid
     %----------------------------------------
-    [Ksz,Kx,Ky,Kz,centre] = NormProjGridExt_v4c(KINFO.kSpace,KINFO.nproj,KINFO.SamplingPts,KINFO.kstep,CONVprms.chW,CTFV.TFB.SubSamp,Fcentre,'M2A');
+    if isempty(KINFO.UseIndex)
+        [Ksz,Kx,Ky,Kz,centre] = NormProjGridExt_v4c(KINFO.kSpace,KINFO.nproj,KINFO.SamplingPts,KINFO.kstep,CONVprms.chW,CTFV.TFB.SubSamp,Fcentre,'M2A');
+    else
+        [Ksz,Kx,Ky,Kz,centre] = NormProjGridExtIdx_v4c(KINFO.kSpace,KINFO.nproj,KINFO.SamplingPts,KINFO.kstep,CONVprms.chW,CTFV.TFB.SubSamp,Fcentre,'M2A',KINFO.UseIndex);
+    end
 
     %----------------------------------------
     % Test

@@ -1,14 +1,15 @@
 %==================================================================
 % (v2b)
-%   - Convert to Object
+%   - Add TrajManip
 %==================================================================
 
-classdef SdcMeth_YarnBall_v2a < handle
+classdef SdcMeth_YarnBall_v2b < handle
 
 properties (SetAccess = private)                   
-    Method = 'SdcMeth_YarnBall_v2a'
+    Method = 'SdcMeth_YarnBall_v2b'
     Optionsfunc
     TFfunc
+    TrajManipfunc
     CTFVatSPfunc
     InitialEstfunc
     Iteratefunc
@@ -17,7 +18,9 @@ properties (SetAccess = private)
     CTFV
     IE
     IT
+    TM
     KINFO
+    DES
     AcqNum
     Panel = cell(0)
     PanelOutput
@@ -34,7 +37,7 @@ methods
 %==================================================================
 % Constructor
 %==================================================================  
-function [SDCMETH,err] = SdcMeth_YarnBall_v2a(SDCMETHipt)    
+function [SDCMETH,err] = SdcMeth_YarnBall_v2b(SDCMETHipt)    
     
     err.flag = 0;
     %---------------------------------------------
@@ -42,6 +45,7 @@ function [SDCMETH,err] = SdcMeth_YarnBall_v2a(SDCMETHipt)
     %---------------------------------------------
     SDCMETH.Optionsfunc = SDCMETHipt.('Optionsfunc').Func;
     SDCMETH.TFfunc = SDCMETHipt.('TFfunc').Func;
+    SDCMETH.TrajManipfunc = SDCMETHipt.('TrajManipfunc').Func;
     SDCMETH.CTFVatSPfunc = SDCMETHipt.('CTFVatSPfunc').Func;
     SDCMETH.InitialEstfunc = SDCMETHipt.('InitialEstfunc').Func;
     SDCMETH.Iteratefunc = SDCMETHipt.('Iteratefunc').Func;    
@@ -61,6 +65,12 @@ function [SDCMETH,err] = SdcMeth_YarnBall_v2a(SDCMETHipt)
     if isfield(SDCMETHipt,([CallingFunction,'_Data']))
         if isfield(SDCMETHipt.([CallingFunction,'_Data']),('TFfunc_Data'))
             TFOipt.TFfunc_Data = SDCMETHipt.([CallingFunction,'_Data']).TFfunc_Data;
+        end
+    end
+    TMipt = SDCMETHipt.('TrajManipfunc');
+    if isfield(SDCMETHipt,([CallingFunction,'_Data']))
+        if isfield(SDCMETHipt.([CallingFunction,'_Data']),('TrajManipfunc_Data'))
+            TMipt.TrajManipfunc_Data = SDCMETHipt.([CallingFunction,'_Data']).TrajManipfunc_Data;
         end
     end
     CTFVipt = SDCMETHipt.('CTFVatSPfunc');
@@ -89,6 +99,8 @@ function [SDCMETH,err] = SdcMeth_YarnBall_v2a(SDCMETHipt)
     SDCMETH.OPT = func(OPTipt);
     func = str2func(SDCMETH.TFfunc);           
     SDCMETH.TFO = func(TFOipt);
+    func = str2func(SDCMETH.TrajManipfunc);           
+    SDCMETH.TM = func(TMipt);
     func = str2func(SDCMETH.CTFVatSPfunc);           
     SDCMETH.CTFV = func(CTFVipt);
     func = str2func(SDCMETH.InitialEstfunc);                   
@@ -113,13 +125,22 @@ function err = Compensate(SDCMETH,IMP)
         return
     end
     SDCMETH.KINFO = IMP.KINFO(SDCMETH.AcqNum);
-
+    SDCMETH.DES = IMP.DES;
+    
     %--------------------------------------------
     % Test
     %--------------------------------------------  
     global COMPASSINFO
     CUDA = COMPASSINFO.CUDA;
     SDCMETH.OPT.SetOptions(CUDA);
+
+    %--------------------------------------------
+    % Trajectory Manipulation
+    %--------------------------------------------  
+    err = SDCMETH.TM.ManipulateTrajectory(SDCMETH);
+    if err.flag
+        return
+    end    
     
     %--------------------------------------------
     % Define Output Transfer Function
@@ -156,8 +177,12 @@ function err = Compensate(SDCMETH,IMP)
     %--------------------------------------------
     % Add Sampling to KINFO
     %--------------------------------------------     
-    SampDensCompMat = SDCArr2Mat(SDCMETH.IT.SampDensComp,SDCMETH.KINFO.nproj,SDCMETH.KINFO.SamplingPts);
-    SDCMETH.KINFO.AddSampDensComp(SampDensCompMat);
+    if isempty(SDCMETH.KINFO.UseIndex)
+        SampDensCompMat = SDCArr2Mat(SDCMETH.IT.SampDensComp,SDCMETH.KINFO.nproj,SDCMETH.KINFO.SamplingPts);
+        SDCMETH.KINFO.AddSampDensComp(SampDensCompMat);
+    else
+        SDCMETH.KINFO.AddSampDensComp(SDCMETH.IT.SampDensComp);
+    end
     SDCMETH.IT.Clear;
     SDCMETH.IE.Clear;
     SDCMETH.CTFV.Clear;

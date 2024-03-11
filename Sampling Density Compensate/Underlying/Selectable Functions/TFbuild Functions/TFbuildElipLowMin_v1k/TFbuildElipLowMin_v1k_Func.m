@@ -2,7 +2,7 @@
 % 
 %=======================================================
 
-function [TFB,err] = TFbuildElip_v1k_Func(TFB,INPUT)
+function [TFB,err] = TFbuildElipLowMin_v1k_Func(TFB,INPUT)
 
 Status2('done','Build TF',2);
 Status2('done','',3);
@@ -24,7 +24,13 @@ end
 if isfield(IMP,'ORNT')
     ORNT = IMP.ORNT;
 else
-    ORNT.ElipDim = 3;
+    if isfield(IMP.PROJimp,'orient')
+        if strcmp(IMP.PROJimp.orient,'Coronal')
+            ORNT.ElipDim = 2;
+        end
+    else
+        ORNT.ElipDim = 3;
+    end
 end
 clear INPUT
 

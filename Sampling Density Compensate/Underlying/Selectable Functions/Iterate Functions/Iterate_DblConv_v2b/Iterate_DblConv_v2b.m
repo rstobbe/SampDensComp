@@ -1,12 +1,12 @@
 %==================================================================
-% (v2a)
-%   - Convert to Object
+% (v2b)
+%   - Include option for 'UseIndex'
 %==================================================================
 
-classdef Iterate_DblConv_v2a < handle
+classdef Iterate_DblConv_v2b < handle
 
 properties (SetAccess = private)                   
-    Method = 'Iterate_DblConv_v2a'
+    Method = 'Iterate_DblConv_v2b'
     Calcfunc
     Anlzfunc
     Breakfunc
@@ -24,7 +24,7 @@ methods
 %==================================================================
 % Constructor
 %==================================================================  
-function [IT,err] = Iterate_DblConv_v2a(ITipt)     
+function [IT,err] = Iterate_DblConv_v2b(ITipt)     
     err.flag = 0;
     IT.Calcfunc = ITipt.('Calcfunc').Func;
     IT.Anlzfunc = ITipt.('Anlzfunc').Func;
@@ -83,6 +83,7 @@ function err = SamplingDensityCompensate(IT,SDCMETH,CUDA)
     KRN = OPT.KRN;
     IE = SDCMETH.IE;
     KINFO = SDCMETH.KINFO;
+    CTFV = SDCMETH.CTFV;
     FwdKern = KRN.FwdKern;
     RvsKern = FwdKern;
     SubSamp = KRN.DesforSS;
@@ -136,13 +137,21 @@ function err = SamplingDensityCompensate(IT,SDCMETH,CUDA)
     %--------------------------------------
     % Normalize Projections to Grid
     %--------------------------------------
-    [Ksz,Kx,Ky,Kz,C] = NormProjGrid_v4c(KINFO.kSpace,KINFO.nproj,KINFO.SamplingPts,KINFO.kstep,chW,SubSamp,'M2A');
+    if isempty(KINFO.UseIndex)
+        [Ksz,Kx,Ky,Kz,C] = NormProjGrid_v4c(KINFO.kSpace,KINFO.nproj,KINFO.SamplingPts,KINFO.kstep,chW,SubSamp,'M2A');
+    else
+        [Ksz,Kx,Ky,Kz,C] = NormProjGridIdx_v4c(KINFO.kSpace,KINFO.nproj,KINFO.SamplingPts,KINFO.kstep,chW,SubSamp,'M2A',KINFO.UseIndex);
+    end
 
     %--------------------------------------
     % Iterate
     %--------------------------------------
     StatLev = 3;
-    IT.SampDensComp = SDCMat2Arr(IE.iSampDensComp,KINFO.nproj,KINFO.SamplingPts);
+    if isempty(KINFO.UseIndex)
+        IT.SampDensComp = SDCMat2Arr(IE.iSampDensComp,KINFO.nproj,KINFO.SamplingPts);
+    else
+        IT.SampDensComp = IE.iSampDensComp(KINFO.UseIndex).';
+    end
     for j = IT.ItNum + 1:500   
 
         IT.ItNum = j;
@@ -158,20 +167,30 @@ function err = SamplingDensityCompensate(IT,SDCMETH,CUDA)
         %--------------------------------------
         % Analysis
         %--------------------------------------
-        err = IT.ANLZ.TestSdc(SDCMETH);
-        if err.flag
-            return
+        if isempty(KINFO.UseIndex)
+            err = IT.ANLZ.TestSdc(SDCMETH);
+            if err.flag
+                return
+            end
+        else
+            Error = (IT.WeightVals - CTFV.DesiredOutputValues)/CTFV.DesiredOutputValues(1);
+            Rad = ((Kx-C).^2 + (Ky-C).^2 + (Kz-C).^2).^0.5;
+            figure(245623); plot(Rad,Error,'*');
         end
         clear INPUT    
 
         %--------------------------------------
         % Test for Completion
         %--------------------------------------    
-        err = IT.BRK.FinishTest(SDCMETH);
-        if err.flag
-            return
-        end 
-        if IT.BRK.Stop == 1
+        if isempty(KINFO.UseIndex)
+            err = IT.BRK.FinishTest(SDCMETH);
+            if err.flag
+                return
+            end 
+            if IT.BRK.Stop == 1
+                break
+            end
+        elseif IT.ItNum > IT.BRK.ItNum
             break
         end
 

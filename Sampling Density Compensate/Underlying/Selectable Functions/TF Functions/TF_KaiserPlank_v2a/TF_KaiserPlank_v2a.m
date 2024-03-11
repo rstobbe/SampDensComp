@@ -32,7 +32,7 @@ end
 %==================================================================
 % DefineTransferFunction
 %==================================================================  
-function err = DefineTransferFunction(TFO,SDCMETH,IMP) 
+function err = DefineTransferFunction(TFO,SDCMETH) 
     err.flag = 0;
     KINFO = SDCMETH.KINFO;
     

@@ -26,7 +26,7 @@ methods
 function [OPT,err] = Options_Advanced_v2a(OPTipt)     
     err.flag = 0;
     OPT.Precision = OPTipt.('Precision');
-    OPT.ResetGpus = OPTipt.('ResetGpus');
+    OPT.ResetGpus = 'Yes';
     
     CallingLabel = OPTipt.Struct.labelstr;
     if not(isfield(OPTipt,[CallingLabel,'_Data']))
@@ -59,13 +59,11 @@ function [err] = SetOptions(OPT,CUDA)
     
     %--------------------------------------
     % Reset Gpus
-    %--------------------------------------
-    if strcmp(OPT.ResetGpus,'Yes')
-        Status2('busy','Reset GPUs',3);
-        NoGPUs = gpuDeviceCount;
-        for n = 1:NoGPUs
-            CUDA = gpuDevice(n);               % Cuda initialization (i.e. a Cuda reset).  'CudaDevice' not needed down pipe... (historic)
-        end
+    %--------------------------------------               
+    Status2('busy','Reset GPUs',2);          % always do this... (possible error otherwise!)
+    NoGPUs = gpuDeviceCount;
+    for n = 1:NoGPUs
+        CUDA = gpuDevice(n);               % Cuda initialization (i.e. a Cuda reset).  'CudaDevice' not needed down pipe... (historic)
     end
 
     %--------------------------------------

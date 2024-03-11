@@ -1,12 +1,12 @@
 %==================================================================
-% (v2a)
-%   - Convert to Object
+% (v2b)
+%   - Accomodate 'UseIndex'
 %==================================================================
 
-classdef Anlz_LR_v2a < handle
+classdef Anlz_LR_v2b < handle
 
 properties (SetAccess = private)                   
-    Method = 'Anlz_LR_v2a'
+    Method = 'Anlz_LR_v2b'
     Visuals
     xAxis
     Draw = 0;
@@ -24,7 +24,7 @@ methods
 %==================================================================
 % Constructor
 %==================================================================  
-function [ANLZ,err] = Anlz_LR_v2a(ANLZipt)     
+function [ANLZ,err] = Anlz_LR_v2b(ANLZipt)     
     err.flag = 0;
     ANLZ.Visuals = ANLZipt.('Visuals');  
     ANLZ.xAxis = ANLZipt.('xAxis');   
@@ -56,6 +56,9 @@ function err = TestSdc(ANLZ,SDCMETH)
     %---------------------------------------------
     % Mean Error Calculation
     %---------------------------------------------    
+    sz = size(KINFO.kSpace);
+    IndMat = zeros(sz(1),sz(2));
+    IndMat
     Error = (IT.WeightVals - CTFV.DesiredOutputValues)/CTFV.DesiredOutputValues((KINFO.nproj-1)*KINFO.SamplingPtAtCentre+KINFO.SamplingPtAtCentre);
     [ErrorMat] = SDCArr2Mat(Error,KINFO.nproj,KINFO.SamplingPts);
     ANLZ.MeanErrTrajArr = mean(ErrorMat,1);

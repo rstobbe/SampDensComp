@@ -28,7 +28,7 @@ end
 %==================================================================
 % DetermineInitialEstimate
 %==================================================================  
-function [err] = DetermineInitialEstimate(IE,SDCMETH,IMP)    
+function [err] = DetermineInitialEstimate(IE,SDCMETH)    
     err.flag = 0;
     KINFO = SDCMETH.KINFO;
     TFO = SDCMETH.TFO;
@@ -38,7 +38,6 @@ function [err] = DetermineInitialEstimate(IE,SDCMETH,IMP)
     % Get SD Shape
     %--------------------------------------------
     Backup = 0;
-    %Backup = 50;
     Pts = KINFO.SamplingPts-Backup;
     RelRads = sqrt(KINFO.kSpace(:,:,1).^2 + KINFO.kSpace(:,:,2).^2 + KINFO.kSpace(:,:,3).^2)/KINFO.kmax;
     RelRadProf = mean(RelRads,1);
@@ -50,7 +49,7 @@ function [err] = DetermineInitialEstimate(IE,SDCMETH,IMP)
     SampDensEst = zeros(1,Pts);
     SampDensEst(2:Pts) = 1./(dRelRadProfBackup.*sRelRadProfBackup(1:Pts-1).^2);
     SampDensEst(1) = SampDensEst(2);
-    SampDensEst = 2*SampDensEst/min(SampDensEst);
+    SampDensEst = 2*SampDensEst/min(abs(SampDensEst));
     
     %--------------------------------------------
     % Interp at Sampling Points
@@ -60,7 +59,7 @@ function [err] = DetermineInitialEstimate(IE,SDCMETH,IMP)
     iSampDensCompAlongTraj = TransFuncOutAlongTraj./SampDensEstAlongTraj;   
     iSampDensCompAlongTraj(iSampDensCompAlongTraj < 0) = -iSampDensCompAlongTraj(iSampDensCompAlongTraj < 0);
     iSampDensCompAlongTraj = iSampDensCompAlongTraj*IE.Scale;
-
+    
     %--------------------------------------------
     % Plot 
     %--------------------------------------------

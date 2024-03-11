@@ -27,7 +27,7 @@ end
 %==================================================================
 % FinishTest
 %==================================================================  
-function err = FinishTest(BRK,SDCMETH,IMP)
+function err = FinishTest(BRK,SDCMETH)
     err.flag = 0;
     IT = SDCMETH.IT;
     ANLZ = IT.ANLZ;
@@ -43,11 +43,13 @@ function err = FinishTest(BRK,SDCMETH,IMP)
     %---------------------------------------------
     % Test for Stopping - increasing error
     %---------------------------------------------
-    if IT.ItNum > 2 && BRK.Stop == 0 && ANLZ.MeanAbsErrTot(IT.ItNum-1) ~= 0
-        if ANLZ.MeanAbsErrTot(IT.ItNum-1) > ANLZ.MeanAbsErrTot(IT.ItNum-2)
-            if ANLZ.MeanAbsErrTot(IT.ItNum) > ANLZ.MeanAbsErrTot(IT.ItNum-1)
-                BRK.Stop = 1;
-                BRK.StopReason = 'Error Increasing';
+    if IT.ItNum > 3 && BRK.Stop == 0 && ANLZ.MeanAbsErrTot(IT.ItNum-1) ~= 0
+        if ANLZ.MeanAbsErrTot(IT.ItNum-2) > ANLZ.MeanAbsErrTot(IT.ItNum-3)
+            if ANLZ.MeanAbsErrTot(IT.ItNum-1) > ANLZ.MeanAbsErrTot(IT.ItNum-2)
+                if ANLZ.MeanAbsErrTot(IT.ItNum) > ANLZ.MeanAbsErrTot(IT.ItNum-1)
+                    BRK.Stop = 1;
+                    BRK.StopReason = 'Error Increasing';
+                end
             end
         end
     end

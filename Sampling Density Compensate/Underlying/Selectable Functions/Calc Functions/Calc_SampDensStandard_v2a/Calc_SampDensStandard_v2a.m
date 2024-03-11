@@ -24,7 +24,7 @@ end
 %==================================================================
 % CalcComp
 %==================================================================  
-function [SampDensComp,err] = CalcComp(CALC,SDCMETH,IMP)    
+function [SampDensComp,err] = CalcComp(CALC,SDCMETH)    
     err.flag = 0;
     CTFV = SDCMETH.CTFV;
     IT = SDCMETH.IT;
